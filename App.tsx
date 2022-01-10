@@ -1,20 +1,51 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useRef } from 'react';
+import { Animated, View, PanResponder, Text } from 'react-native';
+
+import styled from 'styled-components/native';
 
 export default function App() {
+  const pan: any = useRef(new Animated.ValueXY()).current;
+  const panResponder = useRef(PanResponder.create({
+    onMoveShouldSetPanResponder: () => true,
+    onPanResponderMove: Animated.event([
+      null,
+      { dx: pan.x, dy: pan.y }
+    ]),
+    onPanResponderRelease: () => {
+      Animated.spring(pan, {
+        toValue: { x: 0, y: 0 },
+        useNativeDriver: false
+      }).start()
+    }
+  })).current;
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
+    <Container>
+      <Title>Drag & Release this box!</Title>
+      <Animated.View style={{ transform: [{ translateX: pan.x }, { translateY: pan.y }] }} {...panResponder.panHandlers}>
+        <Box />
+      </Animated.View>
       <StatusBar style="auto" />
-    </View>
+    </Container>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+const Container = styled(View)`
+  flex: 1;
+  background-color: #fff;
+  align-items: center;
+  justify-content: center;
+`;
+
+const Title = styled(Text)`
+  font-size: 14px;
+  line-height: 24px;
+  font-weight: bold;
+`;
+
+const Box = styled(View)`
+  height: 150px;
+  width: 150px;
+  background-color: blue;
+  border-radius: 4px;
+`;
